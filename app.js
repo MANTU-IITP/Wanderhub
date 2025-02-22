@@ -1,7 +1,6 @@
-require('dotenv').config();  // Always load .env
-console.log("DB URL:", process.env.ATLASDB_URl);  // Debugging
-console.log("Secret:", process.env.SECRET);
-
+if(process.env.NODE_ENV !="production"){
+    require('dotenv').config();
+}
 
 
 
@@ -30,19 +29,19 @@ const reviewRouter=require("./routes/review.js");
 const userRouter=require("./routes/user.js");
 
 
-const dbUrl = process.env.ATLASDB_URL;
-if (!dbUrl) {
-    console.error("ERROR: MongoDB URL is missing! Check your environment variables.");
-    process.exit(1); // Stop the app if no DB URL
-}
+const dbUrl=process.env.ATLASDB_URl;
 
-mongoose.connect(dbUrl, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+main()
+.then(()=>{
+    console.log("connected to DB");
 })
-.then(() => console.log("✅ Connected to MongoDB"))
-.catch(err => console.error("❌ MongoDB Connection Error:", err));
-
+.catch((err)=>{
+    console.log(err);
+});
+async function main() {
+    await mongoose.connect(dbUrl);
+    
+}
 
 app.set("view engine","ejs");
 app.set("views",path.join(__dirname,"views"));
@@ -50,15 +49,13 @@ app.use(express.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
 app.engine("ejs",ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
-const store = MongoStore.create({
-    mongoUrl: process.env.ATLASDB_URl, // Ensure this is defined!
-    crypto: {
-        secret: process.env.SECRET || "default-secret",
+const store=MongoStore.create({
+    mongoUrl:dbUrl,
+    crypto:{
+        secret:process.env.SECRET,
     },
-    touchAfter: 24 * 3600,
+    touchAfter:24*3600,
 });
-
-
 store.on("error",()=>{
     console.log("ERROR in MONGO SESSION STORE",err);
 })
