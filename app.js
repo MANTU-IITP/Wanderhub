@@ -1,6 +1,4 @@
-if(process.env.NODE_ENV !="production"){
-    require('dotenv').config();
-}
+require('dotenv').config();
 
 
 
@@ -29,7 +27,11 @@ const reviewRouter=require("./routes/review.js");
 const userRouter=require("./routes/user.js");
 
 
-const dbUrl=process.env.ATLASDB_URl;
+const dbUrl=process.env.ATLASDB_URL;
+if (!dbUrl) {
+    console.error(" ERROR: MongoDB URL is missing! Check Render Environment Variables.");
+    process.exit(1);
+}
 
 main()
 .then(()=>{
